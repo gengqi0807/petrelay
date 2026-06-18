@@ -32,7 +32,7 @@
         <el-table-column label="操作" width="280">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="viewRequest(row.id)">查看</el-button>
-            <el-button v-if="row.status === 'OPEN'" type="success" size="small" @click="viewReceivedApplications(row.id)">查看申请</el-button>
+            <el-button v-if="row.status === 'OPEN'" type="success" size="small" @click="loadReceivedApplications(row.id)">查看申请</el-button>
             <el-button v-if="row.status === 'OPEN'" type="danger" size="small" @click="deleteRequest(row.id)">删除</el-button>
           </template>
         </el-table-column>
