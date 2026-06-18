@@ -11,15 +11,21 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="需求" width="200">
           <template #default="{ row }">
-            {{ row.request?.pet?.petName }} - {{ row.request?.serviceType }}
+            {{ row.request?.pet?.petName }} - {{ row.request?.serviceType === 'HOME_VISIT' ? '上门喂养' : '寄养' }}
           </template>
         </el-table-column>
-        <el-table-column label="报价" width="100">
+        <el-table-column label="我的报价" width="100">
           <template #default="{ row }">
             ¥{{ row.price }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" />
+        <el-table-column label="状态" width="120">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 'ACCEPTED' ? 'success' : row.status === 'REJECTED' ? 'danger' : 'warning'" size="small">
+              {{ row.status === 'PENDING' ? '待处理' : row.status === 'ACCEPTED' ? '已通过' : '已拒绝' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="申请时间">
           <template #default="{ row }">
             {{ new Date(row.created_at).toLocaleDateString() }}
@@ -27,7 +33,7 @@
         </el-table-column>
         <el-table-column label="操作" width="120">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'PENDING'" type="danger" size="mini" @click="cancelApplication(row.id)">取消</el-button>
+            <el-button v-if="row.status === 'PENDING'" type="danger" size="small" @click="cancelApplication(row.id)">取消</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -38,6 +44,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import api from '../utils/api';
 
 const router = useRouter();
@@ -55,14 +62,12 @@ const loadApplications = async () => {
 const cancelApplication = async (id) => {
   try {
     await api.delete(`/applications/${id}`);
+    ElMessage.success('已取消');
     await loadApplications();
   } catch (error) {
-    console.error(error);
+    ElMessage.error('取消失败');
   }
 };
-
-const go = (path) => router.push(path);
-const goHome = () => router.push('/');
 
 onMounted(loadApplications);
 </script>

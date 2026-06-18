@@ -2,6 +2,7 @@ const express = require('express');
 const { Op } = require('sequelize');
 const { Order, Request, Application, Pet, User, Review } = require('../models');
 const authMiddleware = require('../middleware/auth');
+const { createNotification } = require('./notification');
 
 const router = express.Router();
 
@@ -40,10 +41,20 @@ router.post('/:id/complete', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: '订单不存在' });
     }
     if (order.request.ownerId !== req.user.id) {
-      return res.status(403).json({ message: '无权限操作' });
+      return res.status(403).json({ message: '仅宠物主人可确认完成' });
+    }
+    if (order.orderStatus !== 'IN_PROGRESS') {
+      return res.status(400).json({ message: '当前订单状态不可确认完成' });
     }
     await order.update({ orderStatus: 'COMPLETED' });
     await order.request.update({ status: 'COMPLETED' });
+    await createNotification(
+      order.sitterId,
+      '托管服务已完成',
+      `宠物主人已确认服务完成，请查看订单详情`,
+      'ORDER',
+      order.id
+    );
     res.json(order);
   } catch (error) {
     console.error(error);
@@ -56,7 +67,7 @@ router.get('/my', authMiddleware, async (req, res) => {
     const orders = await Order.findAll({
       include: [
         { model: Request, as: 'request', include: [{ model: Pet, as: 'pet' }, { model: User, as: 'owner', attributes: ['id', 'nickname', 'avatar'] }] },
-        { model: User, as: 'sitter', attributes: ['id', 'nickname', 'avatar'] },
+        { model: User, as: 'sitter', attributes: ['id', 'nickname', 'avatar', 'isCertified'] },
         { model: Review, as: 'review' },
       ],
       where: {

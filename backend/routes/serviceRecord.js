@@ -23,7 +23,7 @@ const serviceStorage = multer.diskStorage({
 
 const upload = multer({ storage: serviceStorage });
 
-router.post('/:orderId/records', authMiddleware, upload.array('images', 5), async (req, res) => {
+router.post('/:orderId/records', authMiddleware, upload.array('images', 9), async (req, res) => {
   try {
     const { orderId } = req.params;
     const { content } = req.body;
@@ -37,22 +37,6 @@ router.post('/:orderId/records', authMiddleware, upload.array('images', 5), asyn
 
     if (order.orderStatus !== 'IN_PROGRESS') {
       return res.status(400).json({ message: '当前订单无法上传托管记录' });
-    }
-
-    const today = new Date();
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-    const existingToday = await ServiceRecord.findOne({
-      where: {
-        orderId: order.id,
-        createdAt: {
-          [Op.gte]: startOfToday,
-          [Op.lt]: endOfToday,
-        },
-      },
-    });
-    if (existingToday) {
-      return res.status(409).json({ message: '今天已经上传过托管记录，明天再上传' });
     }
 
     const images = req.files?.map((file) => `/uploads/service-images/${file.filename}`) || [];
@@ -82,7 +66,7 @@ router.get('/:orderId', authMiddleware, async (req, res) => {
 
     const records = await ServiceRecord.findAll({
       where: { orderId: order.id },
-      order: [['created_at', 'DESC']],
+      order: [['created_at', 'ASC']],
     });
     res.json(records);
   } catch (error) {

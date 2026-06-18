@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { petName, petType, petAge, healthInfo } = req.body;
+    const { petName, petType, petAge, healthInfo, breed } = req.body;
     if (!petName || !petType) {
       return res.status(400).json({ message: '宠物名称和类型必填' });
     }
@@ -14,6 +14,7 @@ router.post('/', authMiddleware, async (req, res) => {
       ownerId: req.user.id,
       petName,
       petType,
+      breed,
       petAge,
       healthInfo,
     });
@@ -36,12 +37,12 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { petName, petType, petAge, healthInfo } = req.body;
+    const { petName, petType, petAge, healthInfo, breed } = req.body;
     const pet = await Pet.findOne({ where: { id: req.params.id, ownerId: req.user.id } });
     if (!pet) {
       return res.status(404).json({ message: '宠物未找到' });
     }
-    await pet.update({ petName, petType, petAge, healthInfo });
+    await pet.update({ petName, petType, petAge, healthInfo, breed });
     res.json(pet);
   } catch (error) {
     console.error(error);

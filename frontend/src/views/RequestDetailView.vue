@@ -8,21 +8,25 @@
       <el-alert v-if="loadError" :title="loadError" type="error" show-icon style="margin-bottom: 16px;" />
       <el-skeleton v-if="loading" rows="6" animated />
       <el-card v-else-if="request">
-        <p><strong>服务类型：</strong>{{ request.serviceType }}</p>
-        <p><strong>开始时间：</strong>{{ request.startTime }}</p>
-        <p><strong>结束时间：</strong>{{ request.endTime }}</p>
-        <p><strong>宠物：</strong>{{ request.pet?.petName || '暂无数据' }} ({{ request.pet?.petType || '未知' }})</p>
+        <p><strong>服务类型：</strong>{{ request.serviceType === 'HOME_VISIT' ? '上门喂养' : '寄养' }}</p>
+        <p><strong>开始时间：</strong>{{ new Date(request.startTime).toLocaleString() }}</p>
+        <p><strong>结束时间：</strong>{{ new Date(request.endTime).toLocaleString() }}</p>
+        <p><strong>宠物：</strong>{{ request.pet?.petName || '暂无数据' }} ({{ request.pet?.breed || request.pet?.petType || '未知' }})</p>
         <p><strong>地址：</strong>{{ request.address || request.owner?.address || '暂无地址' }}</p>
         <p><strong>报价：</strong>¥{{ request.price }}</p>
         <p><strong>特殊要求：</strong>{{ request.specialReq || '无' }}</p>
         <p><strong>发布者：</strong>{{ request.owner?.nickname || '匿名' }}</p>
         <p v-if="suggestedPrice !== null"><strong>系统建议价格：</strong>¥{{ suggestedPrice }}</p>
-        <el-button v-if="user?.role === 'OWNER' && request.ownerId === user.id && request.status === 'OPEN'" type="danger" size="mini" style="margin-bottom: 16px;" @click="deleteRequest">删除需求</el-button>
+        <el-button v-if="user?.role === 'OWNER' && request.ownerId === user.id && request.status === 'OPEN'" type="danger" size="small" style="margin-bottom: 16px;" @click="deleteRequest">删除需求</el-button>
         <el-divider />
         <template v-if="canApply">
           <el-form label-position="top">
+            <el-form-item label="服务报价（元）">
+              <el-input-number v-model="applyPrice" :min="0" :step="10" style="width: 200px;" />
+              <span style="margin-left: 8px; color: #909399; font-size: 12px;">需求方报价：¥{{ request.price }}</span>
+            </el-form-item>
             <el-form-item label="自我介绍">
-              <el-input type="textarea" v-model="message" placeholder="告诉宠主你是如何照顾宠物的" />
+              <el-input type="textarea" v-model="message" placeholder="告诉宠主你是如何照顾宠物的" :rows="3" />
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="apply">申请接单</el-button>
@@ -46,6 +50,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import api from '../utils/api';
 import { useAuth } from '../composables/useAuth';
 
@@ -54,6 +59,7 @@ const router = useRouter();
 const { user } = useAuth();
 const request = ref(null);
 const message = ref('');
+const applyPrice = ref(0);
 const loading = ref(true);
 const loadError = ref('');
 
@@ -63,8 +69,8 @@ const loadRequest = async () => {
   try {
     const res = await api.get(`/requests/${route.params.id}`);
     request.value = res.data;
+    applyPrice.value = res.data.price;
   } catch (error) {
-    console.error(error);
     loadError.value = error.response?.data?.message || '加载需求详情失败';
   } finally {
     loading.value = false;
@@ -86,10 +92,12 @@ const apply = async () => {
     await api.post('/applications', {
       requestId: request.value.id,
       message: message.value,
+      price: applyPrice.value,
     });
-    router.push('/requests');
+    ElMessage.success('申请已提交');
+    router.push('/my-applications');
   } catch (error) {
-    console.error(error);
+    ElMessage.error(error.response?.data?.message || '申请失败');
   }
 };
 
@@ -101,13 +109,13 @@ const deleteRequest = async () => {
   if (!request.value) return;
   try {
     await api.delete(`/requests/${request.value.id}`);
-    go('/my-requests');
+    ElMessage.success('已删除');
+    router.push('/my-requests');
   } catch (error) {
-    console.error(error);
+    ElMessage.error('删除失败');
   }
 };
 
-const go = (path) => router.push(path);
 const goHome = () => router.push('/');
 
 onMounted(loadRequest);

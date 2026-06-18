@@ -10,6 +10,7 @@ import MyApplicationsView from './views/MyApplicationsView.vue';
 import MyOrdersView from './views/MyOrdersView.vue';
 import ProfileView from './views/ProfileView.vue';
 import MyPetsView from './views/MyPetsView.vue';
+import NotificationsView from './views/NotificationsView.vue';
 import { setupRouter } from './router/guards';
 
 const routes = [
@@ -24,6 +25,7 @@ const routes = [
   { path: '/my-orders', component: MyOrdersView, meta: { requiresAuth: true } },
   { path: '/profile', component: ProfileView, meta: { requiresAuth: true } },
   { path: '/pets', component: MyPetsView, meta: { requiresAuth: true } },
+  { path: '/notifications', component: NotificationsView, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

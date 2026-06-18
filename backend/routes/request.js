@@ -31,13 +31,18 @@ router.post('/', authMiddleware, async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    const { serviceType, petType, status } = req.query;
+    const { serviceType, petType, status, startTime, endTime, distance } = req.query;
     const where = { status: status || 'OPEN' };
     if (serviceType) where.serviceType = serviceType;
     if (petType) {
       const pets = await Pet.findAll({ where: { petType } });
       const petIds = pets.map((pet) => pet.id);
       where.petId = petIds.length > 0 ? petIds : -1;
+    }
+    if (startTime || endTime) {
+      where.startTime = {};
+      if (startTime) where.startTime[Op.gte] = new Date(startTime);
+      if (endTime) where.startTime[Op.lte] = new Date(endTime);
     }
     const requests = await Request.findAll({
       where,

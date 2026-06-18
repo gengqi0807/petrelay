@@ -8,6 +8,9 @@
       </div>
       <div class="navbar-right">
         <el-space>
+          <el-badge v-if="user" :value="unreadCount" :hidden="unreadCount === 0">
+            <el-button type="default" size="large" @click="go('/notifications')">通知</el-button>
+          </el-badge>
           <el-avatar v-if="user && user.avatar" :src="user.avatar" size="small" />
           <el-button v-if="user" type="default" size="large" @click="go('/profile')">{{ user.nickname || user.phone }}</el-button>
           <el-button v-if="user" type="danger" size="large" @click="handleLogout">退出</el-button>
@@ -84,6 +87,7 @@ import api from '../utils/api';
 const router = useRouter();
 const { user, loadUser, logout } = useAuth();
 const dashboardData = ref(null);
+const unreadCount = ref(0);
 
 const ownerCards = computed(() => [
   {
@@ -148,6 +152,15 @@ const loadDashboard = async () => {
   }
 };
 
+const loadUnreadCount = async () => {
+  try {
+    const res = await api.get('/notifications/unread-count');
+    unreadCount.value = res.data.count;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 const go = (path) => router.push(path);
 const handleLogout = () => {
   logout();
@@ -158,6 +171,7 @@ onMounted(async () => {
   await loadUser();
   if (user.value) {
     await loadDashboard();
+    await loadUnreadCount();
   }
 });
 </script>

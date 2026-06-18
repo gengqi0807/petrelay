@@ -7,6 +7,7 @@ const Order = require('./order');
 const ServiceRecord = require('./serviceRecord');
 const Review = require('./review');
 const CertificationApplication = require('./certificationApplication');
+const Notification = require('./notification');
 
 User.hasMany(Pet, { foreignKey: 'ownerId', as: 'pets' });
 Pet.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
@@ -35,8 +36,14 @@ ServiceRecord.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 Order.hasOne(Review, { foreignKey: 'orderId', as: 'review' });
 Review.belongsTo(Order, { foreignKey: 'orderId', as: 'order' });
 
+User.hasMany(Review, { foreignKey: 'reviewerId', as: 'writtenReviews' });
+Review.belongsTo(User, { foreignKey: 'reviewerId', as: 'reviewer' });
+
 User.hasMany(CertificationApplication, { foreignKey: 'userId', as: 'certificationApplications' });
 CertificationApplication.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications' });
+Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 module.exports = {
   sequelize,
@@ -48,4 +55,5 @@ module.exports = {
   ServiceRecord,
   Review,
   CertificationApplication,
+  Notification,
 };

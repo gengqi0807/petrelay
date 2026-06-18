@@ -22,19 +22,23 @@
 <script setup>
 import { reactive } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import axios from '../utils/api';
+import { useAuth } from '../composables/useAuth';
 
 const router = useRouter();
+const { loadUser, setToken } = useAuth();
 const form = reactive({ phone: '', password: '' });
 const back = () => router.back();
 
 const handleSubmit = async () => {
   try {
     const res = await axios.post('/auth/login', form);
-    localStorage.setItem('petrelay_token', res.data.token);
+    setToken(res.data.token);
+    await loadUser();
     router.push('/');
   } catch (error) {
-    console.error(error);
+    ElMessage.error(error.response?.data?.message || '登录失败');
   }
 };
 

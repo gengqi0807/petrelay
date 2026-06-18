@@ -3,8 +3,10 @@ import api from '../utils/api';
 
 const user = ref(null);
 
+const getToken = () => sessionStorage.getItem('petrelay_token');
+
 const loadUser = async () => {
-  const token = localStorage.getItem('petrelay_token');
+  const token = getToken();
   if (!token) {
     user.value = null;
     return;
@@ -14,12 +16,16 @@ const loadUser = async () => {
     user.value = res.data;
   } catch (error) {
     user.value = null;
-    localStorage.removeItem('petrelay_token');
+    sessionStorage.removeItem('petrelay_token');
   }
 };
 
+const setToken = (token) => {
+  sessionStorage.setItem('petrelay_token', token);
+};
+
 const logout = () => {
-  localStorage.removeItem('petrelay_token');
+  sessionStorage.removeItem('petrelay_token');
   user.value = null;
 };
 
@@ -28,5 +34,7 @@ export function useAuth() {
     user,
     loadUser,
     logout,
+    setToken,
+    getToken,
   };
 }

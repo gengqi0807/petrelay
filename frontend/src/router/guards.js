@@ -5,7 +5,7 @@ export function setupRouter(router) {
     const { user, loadUser } = useAuth();
     
     // 从token加载用户（如果未加载过）
-    if (!user.value && localStorage.getItem('petrelay_token')) {
+    if (!user.value && sessionStorage.getItem('petrelay_token')) {
       await loadUser();
     }
 
@@ -22,7 +22,7 @@ export function setupRouter(router) {
     }
 
     // 需要认证的路由
-    const authRequiredPaths = ['/my-requests', '/publish-request', '/my-applications', '/my-orders', '/profile', '/pets'];
+    const authRequiredPaths = ['/my-requests', '/publish-request', '/my-applications', '/my-orders', '/profile', '/pets', '/notifications'];
     if (authRequiredPaths.some(path => to.path.startsWith(path)) && !user.value) {
       next('/login');
       return;

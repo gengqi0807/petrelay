@@ -14,6 +14,10 @@ Review.init(
       type: DataTypes.BIGINT.UNSIGNED,
       allowNull: false,
     },
+    reviewerId: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+    },
     rating: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,

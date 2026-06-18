@@ -21,6 +21,7 @@ const certificationRoutes = require('./routes/certificationApplication');
 const petRoutes = require('./routes/pet');
 const dashboardRoutes = require('./routes/dashboard');
 const serviceRecordRoutes = require('./routes/serviceRecord');
+const { router: notificationRoutes } = require('./routes/notification');
 const { sequelize } = require('./models');
 
 app.use('/api/auth', authRoutes);
@@ -33,6 +34,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/certification-applications', certificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/service-records', serviceRecordRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'PetRelay backend running' });

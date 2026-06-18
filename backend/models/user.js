@@ -41,6 +41,15 @@ User.init(
       allowNull: false,
       defaultValue: false,
     },
+    loginFailCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    lockedUntil: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     sequelize,

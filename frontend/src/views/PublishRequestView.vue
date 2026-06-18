@@ -12,7 +12,7 @@
         <el-form :model="form" label-width="120px">
           <el-form-item label="宠物">
             <el-select v-model="form.petId" placeholder="选择宠物" clearable>
-              <el-option v-for="pet in pets" :key="pet.id" :label="`${pet.petName} (${pet.petType})`" :value="pet.id" />
+              <el-option v-for="pet in pets" :key="pet.id" :label="`${pet.petName} (${pet.breed || pet.petType})`" :value="pet.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="服务类型">
@@ -37,7 +37,7 @@
             <el-input v-model="form.address" placeholder="请输入地址" />
           </el-form-item>
           <el-form-item label="特殊要求">
-            <el-input type="textarea" v-model="form.specialReq" placeholder="填写特殊要求" />
+            <el-input type="textarea" v-model="form.specialReq" placeholder="填写特殊要求" :rows="3" />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="publish">发布需求</el-button>
@@ -51,6 +51,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import api from '../utils/api';
 
 const router = useRouter();
@@ -76,15 +77,24 @@ const suggestedPrice = computed(() => {
 });
 
 const publish = async () => {
+  if (!form.petId) {
+    ElMessage.warning('请选择宠物');
+    return;
+  }
+  if (!form.startTime || !form.endTime) {
+    ElMessage.warning('请选择托管时间');
+    return;
+  }
   try {
     await api.post('/requests', {
       ...form,
       startTime: form.startTime,
       endTime: form.endTime,
     });
+    ElMessage.success('发布成功');
     router.push('/my-requests');
   } catch (error) {
-    console.error(error);
+    ElMessage.error(error.response?.data?.message || '发布失败');
   }
 };
 

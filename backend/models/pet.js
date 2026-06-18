@@ -22,6 +22,10 @@ Pet.init(
       type: DataTypes.ENUM('DOG', 'CAT', 'OTHER'),
       allowNull: false,
     },
+    breed: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     petAge: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
