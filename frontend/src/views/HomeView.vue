@@ -8,8 +8,9 @@
       </div>
       <div class="navbar-right">
         <el-space>
+          <el-avatar v-if="user && user.avatar" :src="user.avatar" size="small" />
           <el-button v-if="user" type="default" size="large" @click="go('/profile')">{{ user.nickname || user.phone }}</el-button>
-          <el-button v-if="user" type="primary" size="large" @click="go('/pets')">我的宠物</el-button>
+          <el-button v-if="user" type="danger" size="large" @click="handleLogout">退出</el-button>
           <template v-else>
             <el-button type="primary" size="large" @click="go('/login')">登录</el-button>
             <el-button type="default" size="large" @click="go('/register')">注册</el-button>
@@ -42,62 +43,123 @@
         </el-row>
       </div>
 
-      <!-- 宠物主人仪表板 -->
+      <!-- 宠物主人仪表盘 -->
       <div v-else-if="user.role === 'OWNER'" class="dashboard owner-dashboard">
-        <el-row :gutter="24">
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="我的发布" :value="0" />
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="进行中的订单" :value="0" />
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="已完成订单" :value="0" />
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="我的宠物" :value="0" />
+        <el-row :gutter="24" class="dashboard-cards">
+          <el-col v-for="card in ownerCards" :key="card.title" :xs="24" :sm="12" :md="6">
+            <el-card class="dashboard-card owner-card" @click="go(card.path)">
+              <el-statistic :title="card.title" :value="card.value" />
+              <p>{{ card.desc }}</p>
+            </el-card>
           </el-col>
         </el-row>
         <el-divider />
         <el-button type="primary" size="large" @click="go('/publish-request')">📝 发布新的托管需求</el-button>
-        <el-button type="default" size="large" @click="go('/my-requests')">📋 查看我的发布</el-button>
       </div>
 
-      <!-- 宠托师仪表板 -->
+      <!-- 宠托师仪表盘 -->
       <div v-else-if="user.role === 'SITTER'" class="dashboard sitter-dashboard">
-        <el-row :gutter="24">
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="待处理申请" :value="0" />
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="进行中订单" :value="0" />
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="已完成订单" :value="0" />
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="6">
-            <el-statistic title="累计评分" :value="5.0" />
+        <el-row :gutter="24" class="dashboard-cards">
+          <el-col v-for="card in sitterCards" :key="card.title" :xs="24" :sm="12" :md="6">
+            <el-card class="dashboard-card sitter-card" @click="go(card.path)">
+              <el-statistic :title="card.title" :value="card.value" />
+              <p>{{ card.desc }}</p>
+            </el-card>
           </el-col>
         </el-row>
         <el-divider />
         <el-button type="success" size="large" @click="go('/requests')">🔍 浏览托管需求</el-button>
-        <el-button type="default" size="large" @click="go('/my-applications')">📨 我的应聘</el-button>
       </div>
     </el-main>
   </div>
 </template>
 
 <script setup>
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { useAuth } from '../composables/useAuth';
+import api from '../utils/api';
 
 const router = useRouter();
 const { user, loadUser, logout } = useAuth();
+const dashboardData = ref(null);
+
+const ownerCards = computed(() => [
+  {
+    title: '我的发布',
+    value: dashboardData.value?.myRequests ?? 0,
+    desc: '查看当前发布的托管需求',
+    path: '/my-requests',
+  },
+  {
+    title: '进行中的订单',
+    value: dashboardData.value?.inProgressOrders ?? 0,
+    desc: '查看正在执行的订单',
+    path: '/my-orders',
+  },
+  {
+    title: '订单历史',
+    value: dashboardData.value?.completedOrders ?? 0,
+    desc: '查看已完成订单历史',
+    path: '/my-orders',
+  },
+  {
+    title: '我的宠物',
+    value: dashboardData.value?.myPets ?? 0,
+    desc: '管理您的宠物信息',
+    path: '/pets',
+  },
+]);
+
+const sitterCards = computed(() => [
+  {
+    title: '待处理申请',
+    value: dashboardData.value?.pendingApplications ?? 0,
+    desc: '查看待处理的申请',
+    path: '/my-applications',
+  },
+  {
+    title: '进行中的订单',
+    value: dashboardData.value?.inProgressOrders ?? 0,
+    desc: '查看正在进行的订单',
+    path: '/my-orders',
+  },
+  {
+    title: '已完成订单',
+    value: dashboardData.value?.completedOrders ?? 0,
+    desc: '查看已完成的订单',
+    path: '/my-orders',
+  },
+  {
+    title: '累计评分',
+    value: dashboardData.value?.avgRating ?? 0,
+    desc: '查看您的平均评分',
+    path: '/my-orders',
+  },
+]);
+
+const loadDashboard = async () => {
+  try {
+    const res = await api.get('/dashboard');
+    dashboardData.value = res.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 const go = (path) => router.push(path);
+const handleLogout = () => {
+  logout();
+  router.push('/');
+};
 
-onMounted(loadUser);
+onMounted(async () => {
+  await loadUser();
+  if (user.value) {
+    await loadDashboard();
+  }
+});
 </script>
 
 <style scoped>

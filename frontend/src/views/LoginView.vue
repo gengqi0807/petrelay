@@ -1,6 +1,9 @@
 <template>
   <el-card class="login-card">
-    <h2>登录 PetRelay</h2>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px;">
+      <el-button type="text" @click="back">返回</el-button>
+      <h2>登录 PetRelay</h2>
+    </div>
     <el-form :model="form" @submit.prevent="handleSubmit">
       <el-form-item label="手机号">
         <el-input v-model="form.phone" placeholder="请输入手机号" />
@@ -23,12 +26,13 @@ import axios from '../utils/api';
 
 const router = useRouter();
 const form = reactive({ phone: '', password: '' });
+const back = () => router.back();
 
 const handleSubmit = async () => {
   try {
     const res = await axios.post('/auth/login', form);
     localStorage.setItem('petrelay_token', res.data.token);
-    router.push('/requests');
+    router.push('/');
   } catch (error) {
     console.error(error);
   }

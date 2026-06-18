@@ -34,6 +34,35 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
+router.put('/:id', authMiddleware, async (req, res) => {
+  try {
+    const { petName, petType, petAge, healthInfo } = req.body;
+    const pet = await Pet.findOne({ where: { id: req.params.id, ownerId: req.user.id } });
+    if (!pet) {
+      return res.status(404).json({ message: '宠物未找到' });
+    }
+    await pet.update({ petName, petType, petAge, healthInfo });
+    res.json(pet);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '更新宠物失败' });
+  }
+});
+
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const pet = await Pet.findOne({ where: { id: req.params.id, ownerId: req.user.id } });
+    if (!pet) {
+      return res.status(404).json({ message: '宠物未找到' });
+    }
+    await pet.destroy();
+    res.json({ message: '删除成功' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '删除宠物失败' });
+  }
+});
+
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const pet = await Pet.findOne({ where: { id: req.params.id, ownerId: req.user.id } });

@@ -1,6 +1,6 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { Order, Request, Application, Pet } = require('../models');
+const { Order, Request, Application, Pet, User, Review } = require('../models');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -55,7 +55,9 @@ router.get('/my', authMiddleware, async (req, res) => {
   try {
     const orders = await Order.findAll({
       include: [
-        { model: Request, as: 'request', include: [{ model: Pet, as: 'pet' }] },
+        { model: Request, as: 'request', include: [{ model: Pet, as: 'pet' }, { model: User, as: 'owner', attributes: ['id', 'nickname', 'avatar'] }] },
+        { model: User, as: 'sitter', attributes: ['id', 'nickname', 'avatar'] },
+        { model: Review, as: 'review' },
       ],
       where: {
         [Op.or]: [

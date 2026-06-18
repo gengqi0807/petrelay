@@ -17,7 +17,7 @@ const routes = [
   { path: '/login', component: LoginView },
   { path: '/register', component: RegisterView },
   { path: '/requests', component: RequestListView, meta: { requiresAuth: true, requiresRole: 'SITTER' } },
-  { path: '/requests/:id', component: RequestDetailView, meta: { requiresAuth: true, requiresRole: 'SITTER' } },
+  { path: '/requests/:id', component: RequestDetailView, meta: { requiresAuth: true } },
   { path: '/my-requests', component: MyRequestsView, meta: { requiresAuth: true } },
   { path: '/publish-request', component: PublishRequestView, meta: { requiresAuth: true } },
   { path: '/my-applications', component: MyApplicationsView, meta: { requiresAuth: true } },

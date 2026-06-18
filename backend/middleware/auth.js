@@ -15,7 +15,7 @@ module.exports = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ message: '用户不存在' });
     }
-    req.user = { id: user.id, role: user.role };
+    req.user = user;
     next();
   } catch (error) {
     console.error(error);

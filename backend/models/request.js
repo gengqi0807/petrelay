@@ -30,6 +30,15 @@ Request.init(
       type: DataTypes.ENUM('HOME_VISIT', 'BOARDING'),
       allowNull: false,
     },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    address: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     specialReq: {
       type: DataTypes.TEXT,
       allowNull: true,

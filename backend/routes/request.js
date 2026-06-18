@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { petId, startTime, endTime, serviceType, specialReq } = req.body;
-    if (!petId || !startTime || !endTime || !serviceType) {
+    const { petId, startTime, endTime, serviceType, specialReq, price, address } = req.body;
+    if (!petId || !startTime || !endTime || !serviceType || price === undefined || price === null) {
       return res.status(400).json({ message: '参数不完整' });
     }
     const request = await Request.create({
@@ -18,6 +18,8 @@ router.post('/', authMiddleware, async (req, res) => {
       endTime,
       serviceType,
       specialReq,
+      price,
+      address: address || req.user.address || null,
       status: 'OPEN',
     });
     res.status(201).json(request);
@@ -83,6 +85,23 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: '获取需求详情失败' });
+  }
+});
+
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const request = await Request.findOne({ where: { id: req.params.id, ownerId: req.user.id } });
+    if (!request) {
+      return res.status(404).json({ message: '需求未找到' });
+    }
+    if (['CONFIRMED', 'COMPLETED'].includes(request.status)) {
+      return res.status(400).json({ message: '当前需求不可删除' });
+    }
+    await Request.destroy({ where: { id: request.id } });
+    res.json({ message: '删除需求成功' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '删除需求失败' });
   }
 });
 
